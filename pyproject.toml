@@ -1,0 +1,13 @@
+[project]
+name = "arc-onboarding-kit"
+version = "0.1.0"
+description = "Get from nothing to a confirmed transaction on Arc testnet in minutes: network config, MetaMask steps, a fresh testnet wallet, an RPC health check, and a first test transaction. CLI and MCP tools."
+requires-python = ">=3.11"
+dependencies = ["httpx>=0.28.1", "mcp[cli]>=1.27.1", "eth-account>=0.13.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
