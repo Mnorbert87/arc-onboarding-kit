@@ -98,14 +98,25 @@ def send_test(to: str, amount_usdc: float = 0.01, private_key: Optional[str] = N
 
     acct = Account.from_key(key)
     nonce = int(_rpc("eth_getTransactionCount", [acct.address, "pending"]), 16)
-    gas_price = int(_rpc("eth_gasPrice", []), 16)
+    # Arc uses EIP-1559 (type 2) with a 20 Gwei minimum base fee.
+    try:
+        base = int(_rpc("eth_getBlockByNumber", ["latest", False]).get("baseFeePerGas", "0x0"), 16)
+    except Exception:
+        base = 0
+    base = max(base, 20 * 10 ** 9)
+    try:
+        priority = int(_rpc("eth_maxPriorityFeePerGas", []), 16) or 10 ** 9
+    except Exception:
+        priority = 10 ** 9
     tx = {
         "to": to_checksum_address(to),
         "value": int(round(amount_usdc * 10 ** NATIVE_DECIMALS)),
         "gas": 21000,
-        "gasPrice": gas_price,
+        "maxFeePerGas": base * 2 + priority,
+        "maxPriorityFeePerGas": priority,
         "nonce": nonce,
         "chainId": CHAIN_ID,
+        "type": 2,
     }
     signed = Account.sign_transaction(tx, key)
     raw = signed.raw_transaction.hex()
